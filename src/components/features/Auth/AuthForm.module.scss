@@ -1,0 +1,61 @@
+@import '../../../assets/styles/_variables.scss';
+
+.authForm {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-md;
+  background: $background-color;
+  width: 100%;
+
+  .logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: $spacing-xl;
+  }
+
+  .title {
+    color: $text-primary;
+    font-size: 28px;
+    font-weight: 300;
+    margin-bottom: $spacing-xl;
+    text-align: center;
+  }
+
+  .form {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    background: $secondary-color;
+    padding: $spacing-xl;
+    border-radius: $border-radius;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .helpText {
+    text-align: center;
+    color: $text-secondary;
+    font-size: $font-size-small;
+    margin-top: $spacing-md;
+
+    a {
+      color: $primary-color;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .error {
+    color: #ff5c5c;
+    text-align: center;
+    margin-top: 0;
+    font-size: $font-size-small;
+  }
+}
