@@ -1,19 +1,37 @@
-import axios from 'axios';
-import { ApiChat } from '../types';
+import axios, { AxiosError } from 'axios';
+import { delay } from '../utils/delay.ts';
+import { ApiChat } from '../types/index.ts';
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+export class ApiError extends Error {
+  constructor(message: string, public status?: number, public code?: string) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
 
 export const createApi = (idInstance: string, apiTokenInstance: string) => {
   const baseURL = `https://1103.api.green-api.com/waInstance${idInstance}`;
   let lastRequestTime = 0;
-  const MIN_REQUEST_INTERVAL = 1000;
+  const MIN_REQUEST_INTERVAL = 2000;
 
   const api = axios.create({
     baseURL,
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
   });
+
+  api.interceptors.response.use(
+    (response) => response,
+    (error: AxiosError) => {
+      if (error.response?.status === 429) {
+        throw new ApiError(
+          'Too many requests. Please try again later.',
+          429,
+          'RATE_LIMIT'
+        );
+      }
+      throw new ApiError(error.message, error.response?.status, error.code);
+    }
+  );
 
   const throttledRequest = async (request: () => Promise<any>) => {
     const now = Date.now();
@@ -27,7 +45,15 @@ export const createApi = (idInstance: string, apiTokenInstance: string) => {
     }
 
     lastRequestTime = Date.now();
-    return request();
+    try {
+      return await request();
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 429) {
+        await delay(5000);
+        return request();
+      }
+      throw error;
+    }
   };
 
   return {

@@ -103,12 +103,18 @@ export const ChatWindow: React.FC = () => {
       </div>
 
       <form onSubmit={handleSendMessage} className={styles.inputArea}>
-        <Input
-          type="text"
+        <textarea
+          className={styles.textarea}
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSendMessage(e);
+            }
+          }}
           disabled={isLoading}
+          rows={2}
         />
         <Button type="submit" disabled={isLoading}>
           {isLoading ? 'Sending...' : 'Send'}

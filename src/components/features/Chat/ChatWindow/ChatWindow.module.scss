@@ -93,8 +93,15 @@
   align-items: center;
   z-index: 1;
 
-  input {
+  .textarea {
     flex: 1;
+    width: 100%;
+    resize: none;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 16px;
+    outline: none;
   }
 }
 

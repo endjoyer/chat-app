@@ -81,6 +81,7 @@
   .chatHeader {
     display: flex;
     justify-content: space-between;
+    gap: 10px;
     margin-bottom: $spacing-xs;
 
     .chatName {

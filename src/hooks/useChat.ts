@@ -7,19 +7,27 @@ import {
   setError,
 } from '../store/slices/chatSlice.ts';
 import { Message } from '../types/index.ts';
+import { storage } from '../utils/storage.ts';
 
 export const useChat = () => {
   const dispatch = useAppDispatch();
   const api = useGreenApi();
-  const { currentChat } = useAppSelector((state) => state.chat);
-  const pollingTimeoutRef = useRef<NodeJS.Timeout>(null);
+  const { currentChat, messages } = useAppSelector((state) => state.chat);
+  const lastMessageTimestamp = useRef<number>(0);
 
   const loadMessages = useCallback(async () => {
     if (!api || !currentChat) return;
 
     try {
+      const cachedMessages = storage.getMessages(currentChat.id);
+      if (cachedMessages.length > 0) {
+        lastMessageTimestamp.current =
+          cachedMessages[cachedMessages.length - 1].timestamp;
+        dispatch(setMessages(cachedMessages));
+      }
+
       const response = await api.getChatHistory(currentChat.id);
-      const messages: Message[] = response
+      const newMessages: Message[] = response
         .map((msg: any) => ({
           id: msg.idMessage,
           text:
@@ -29,11 +37,17 @@ export const useChat = () => {
           timestamp: msg.timestamp * 1000,
           fromMe: msg.type === 'outgoing',
         }))
-        .filter((msg: Message) => msg.text)
+        .filter(
+          (msg: Message) =>
+            msg.text && msg.timestamp > lastMessageTimestamp.current
+        )
         .sort((a: Message, b: Message) => a.timestamp - b.timestamp);
 
-      if (messages.length > 0) {
-        dispatch(setMessages(messages));
+      if (newMessages.length > 0) {
+        const updatedMessages = [...messages, ...newMessages];
+        dispatch(setMessages(updatedMessages));
+        lastMessageTimestamp.current =
+          newMessages[newMessages.length - 1].timestamp;
       }
     } catch (error) {
       dispatch(setError('Failed to load messages'));
@@ -42,17 +56,10 @@ export const useChat = () => {
 
   useEffect(() => {
     if (currentChat) {
+      lastMessageTimestamp.current = 0;
       loadMessages();
-
-      pollingTimeoutRef.current = setInterval(loadMessages, 10000);
     }
-
-    return () => {
-      if (pollingTimeoutRef.current) {
-        clearInterval(pollingTimeoutRef.current);
-      }
-    };
-  }, [currentChat?.id]);
+  }, [currentChat?.id, loadMessages]);
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -67,6 +74,7 @@ export const useChat = () => {
           fromMe: true,
         };
         dispatch(addMessage(newMessage));
+        lastMessageTimestamp.current = newMessage.timestamp;
         return true;
       } catch (error) {
         dispatch(setError('Failed to send message'));
