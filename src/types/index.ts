@@ -37,3 +37,12 @@ export interface Notification {
     };
   };
 }
+
+export interface ApiChat {
+  archive: boolean;
+  id: string;
+  notSpam: boolean;
+  ephemeralExpiration: number;
+  ephemeralSettingTimestamp: number;
+  name?: string;
+}

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { ApiChat } from '../types';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -39,10 +40,9 @@ export const createApi = (idInstance: string, apiTokenInstance: string) => {
       ).then((response) => response.data);
     },
 
-    getChats: async () => {
-      return throttledRequest(() =>
-        api.get(`/getChats/${apiTokenInstance}`)
-      ).then((response) => response.data);
+    getChats: async (): Promise<ApiChat[]> => {
+      const response = await api.get(`/getChats/${apiTokenInstance}`);
+      return response.data;
     },
 
     getChatHistory: async (chatId: string) => {

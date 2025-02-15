@@ -12,7 +12,7 @@ import { Input } from '../../../common/Input/Input.tsx';
 import { PersonIcon } from '../../../common/Icons/PersonIcon.tsx';
 import styles from './ChatList.module.scss';
 import { Header } from './Header/Header.tsx';
-import { Chat } from '../../../../types/index.ts';
+import { ApiChat, Chat } from '../../../../types/index.ts';
 import { delay } from '../../../../utils/delay.ts';
 import { storage } from '../../../../utils/storage.ts';
 
@@ -38,7 +38,7 @@ export const ChatList: React.FC = () => {
       dispatch(setLoading(true));
       try {
         const response = await api.getChats();
-        const formattedChats: Chat[] = response.map((chat: any) => ({
+        const formattedChats: Chat[] = response.map((chat: ApiChat) => ({
           id: chat.id.replace('@c.us', ''),
           name: chat.name || chat.id.replace('@c.us', ''),
           lastMessage: '',
@@ -183,9 +183,7 @@ export const ChatList: React.FC = () => {
                 </span>
               </div>
               {chat.lastMessage && (
-                <div className={styles.lastMessage}>
-                  {chat.lastMessage.text}
-                </div>
+                <div className={styles.lastMessage}>{chat.lastMessage}</div>
               )}
             </div>
           </div>
