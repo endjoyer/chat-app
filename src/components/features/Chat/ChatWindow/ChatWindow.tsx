@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAppSelector } from '../../../../hooks/redux.ts';
 import { useChat } from '../../../../hooks/useChat.ts';
-import { Input } from '../../../common/Input/Input.tsx';
 import { Button } from '../../../common/Button/Button.tsx';
 import styles from './ChatWindow.module.scss';
 

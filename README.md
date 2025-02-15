@@ -1,46 +1,97 @@
-# Getting Started with Create React App
+# WhatsApp Web Clone
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React-based WhatsApp Web clone that uses the GREEN-API service for sending and receiving messages. This application provides a simplified interface similar to WhatsApp Web, allowing users to communicate through WhatsApp without keeping their phone online.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- 💬 Real-time messaging using GREEN-API
+- 🔒 Secure authentication with GREEN-API credentials
+- 📱 Responsive design similar to WhatsApp Web
+- 💾 Local storage for chats and messages persistence
+- ⚡ Message throttling to prevent API rate limiting
+- 🔄 Auto-scrolling chat with manual override
+- 📋 Chat history loading
+- 🔔 Real-time notifications for new messages
 
-### `npm start`
+## Technologies Used
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- React 18
+- TypeScript
+- Redux Toolkit for state management
+- React Router for navigation
+- Axios for API requests
+- SCSS Modules for styling
+- Local Storage for data persistence
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Prerequisites
 
-### `npm test`
+- Node.js (v14 or higher)
+- npm or yarn
+- GREEN-API account credentials (idInstance and apiTokenInstance)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Installation
 
-### `npm run build`
+1. Clone the repository:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+git clone https://github.com/yourusername/whatsapp-web-clone.git cd whatsapp-web-clone
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. Install dependencies:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```
+npm install
+```
 
-### `npm run eject`
+3. Start the development server:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```
+npm start
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+The application will be available at `http://localhost:3000`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Configuration
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Before using the application, you need to:
 
-## Learn More
+1. Create an account at [GREEN-API](https://green-api.com/)
+2. Get your `idInstance` and `apiTokenInstance`
+3. Connect a WhatsApp account following GREEN-API instructions
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Usage
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. Open the application in your browser
+2. Enter your GREEN-API credentials (idInstance and apiTokenInstance)
+3. After successful authentication, you can:
+   - Start new chats by entering a phone number
+   - Send and receive messages
+   - View chat history
+   - Receive real-time notifications
+
+## Project Structure
+
+```plaintext
+src/
+├── components/
+│   ├── common/        # Переиспользуемые компоненты
+│   └── features/      # Компоненты, специфичные для фич
+├── hooks/            # Кастомные React-хуки
+├── services/         # API и сервисный слой
+├── store/            # Конфигурация Redux-хранилища
+├── types/            # Типы и интерфейсы TypeScript
+└── utils/            # Утилитные функции
+```
+
+## API Rate Limiting
+
+The application implements request throttling to comply with GREEN-API's rate limits:
+
+- Minimum 2 seconds between requests
+- Automatic retry on rate limit errors
+- Request queuing for better performance
+
+## Acknowledgments
+
+- [GREEN-API](https://green-api.com/) for providing the WhatsApp API
+- WhatsApp Web for interface inspiration
