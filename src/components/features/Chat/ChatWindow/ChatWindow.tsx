@@ -21,7 +21,6 @@ export const ChatWindow: React.FC = () => {
     }
   }, [autoScroll]);
 
-  // Отслеживаем скролл пользователя
   const handleScroll = useCallback(() => {
     if (!messagesContainerRef.current) return;
 

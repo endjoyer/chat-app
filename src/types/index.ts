@@ -11,9 +11,11 @@ export interface Message {
 }
 
 export interface Chat {
-  id: string; // phone number
+  id: string;
   name: string;
-  lastMessage?: Message;
+  lastMessage: string;
+  timestamp: number;
+  unread: boolean;
 }
 
 export interface Notification {

@@ -7,57 +7,33 @@ import {
   setError,
 } from '../store/slices/chatSlice.ts';
 import { Message } from '../types/index.ts';
-import { storage } from '../utils/storage.ts';
-
-const POLLING_INTERVAL = 15000;
 
 export const useChat = () => {
   const dispatch = useAppDispatch();
   const api = useGreenApi();
   const { currentChat } = useAppSelector((state) => state.chat);
-  const lastMessageTimestamp = useRef<number>(0);
-  const isFirstLoad = useRef<boolean>(true);
+  const pollingTimeoutRef = useRef<NodeJS.Timeout>(null);
 
   const loadMessages = useCallback(async () => {
     if (!api || !currentChat) return;
 
     try {
-      if (isFirstLoad.current) {
-        const cachedMessages = storage.getMessages(currentChat.id);
-        if (cachedMessages.length > 0) {
-          dispatch(setMessages(cachedMessages));
-          lastMessageTimestamp.current =
-            cachedMessages[cachedMessages.length - 1].timestamp;
-          isFirstLoad.current = false;
-          return;
-        }
-      }
-
       const response = await api.getChatHistory(currentChat.id);
       const messages: Message[] = response
         .map((msg: any) => ({
           id: msg.idMessage,
           text:
-            msg.textMessage ||
             msg.messageData?.textMessageData?.textMessage ||
+            msg.textMessage ||
             '',
           timestamp: msg.timestamp * 1000,
           fromMe: msg.type === 'outgoing',
         }))
-        .filter(
-          (msg: Message) =>
-            msg.text && msg.timestamp > lastMessageTimestamp.current
-        )
+        .filter((msg: Message) => msg.text)
         .sort((a: Message, b: Message) => a.timestamp - b.timestamp);
 
       if (messages.length > 0) {
-        if (isFirstLoad.current) {
-          dispatch(setMessages(messages));
-          isFirstLoad.current = false;
-        } else {
-          messages.forEach((msg) => dispatch(addMessage(msg)));
-        }
-        lastMessageTimestamp.current = messages[messages.length - 1].timestamp;
+        dispatch(setMessages(messages));
       }
     } catch (error) {
       dispatch(setError('Failed to load messages'));
@@ -66,22 +42,21 @@ export const useChat = () => {
 
   useEffect(() => {
     if (currentChat) {
-      lastMessageTimestamp.current = 0;
-      isFirstLoad.current = true;
       loadMessages();
+
+      pollingTimeoutRef.current = setInterval(loadMessages, 10000);
     }
+
+    return () => {
+      if (pollingTimeoutRef.current) {
+        clearInterval(pollingTimeoutRef.current);
+      }
+    };
   }, [currentChat?.id]);
-
-  useEffect(() => {
-    if (!currentChat) return;
-
-    const interval = setInterval(loadMessages, POLLING_INTERVAL);
-    return () => clearInterval(interval);
-  }, [currentChat, loadMessages]);
 
   const sendMessage = useCallback(
     async (text: string) => {
-      if (!api || !currentChat) return;
+      if (!api || !currentChat) return false;
 
       try {
         const response = await api.sendMessage(currentChat.id, text);
@@ -92,7 +67,6 @@ export const useChat = () => {
           fromMe: true,
         };
         dispatch(addMessage(newMessage));
-        lastMessageTimestamp.current = newMessage.timestamp;
         return true;
       } catch (error) {
         dispatch(setError('Failed to send message'));

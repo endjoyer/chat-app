@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from './redux.ts';
 import { useGreenApi } from './useGreenApi.ts';
 import {
@@ -6,14 +6,13 @@ import {
   setLastNotificationId,
 } from '../store/slices/chatSlice.ts';
 
-const NOTIFICATION_INTERVAL = 5000;
+const POLLING_INTERVAL = 5000;
 
 export const useNotifications = () => {
   const dispatch = useAppDispatch();
   const api = useGreenApi();
-  const lastNotificationId = useAppSelector(
-    (state) => state.chat.lastNotificationId
-  );
+  const { lastNotificationId } = useAppSelector((state) => state.chat);
+  const pollingTimeoutRef = useRef<NodeJS.Timeout>(null);
 
   const receiveNotification = useCallback(async () => {
     if (!api) return;
@@ -22,14 +21,15 @@ export const useNotifications = () => {
       const notification = await api.receiveNotification();
 
       if (notification) {
-        const { receiptId, body } = notification;
-
-        if (body.typeWebhook === 'incomingMessageReceived') {
+        if (
+          notification.body.typeWebhook === 'incomingMessageReceived' &&
+          notification.body.messageData?.textMessageData
+        ) {
           dispatch(updateChatFromNotification(notification));
         }
 
-        await api.deleteNotification(receiptId);
-        dispatch(setLastNotificationId(receiptId));
+        dispatch(setLastNotificationId(notification.receiptId));
+        await api.deleteNotification(notification.receiptId);
       }
     } catch (error) {
       console.error('Failed to receive notification:', error);
@@ -37,7 +37,18 @@ export const useNotifications = () => {
   }, [api, dispatch]);
 
   useEffect(() => {
-    const interval = setInterval(receiveNotification, NOTIFICATION_INTERVAL);
-    return () => clearInterval(interval);
-  }, [receiveNotification]);
+    if (api) {
+      receiveNotification();
+      pollingTimeoutRef.current = setInterval(
+        receiveNotification,
+        POLLING_INTERVAL
+      );
+    }
+
+    return () => {
+      if (pollingTimeoutRef.current) {
+        clearInterval(pollingTimeoutRef.current);
+      }
+    };
+  }, [api, receiveNotification]);
 };

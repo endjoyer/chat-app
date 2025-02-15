@@ -11,13 +11,11 @@ function App() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    // Проверяем сохраненные credentials при загрузке приложения
     const savedCredentials = localStorage.getItem('whatsapp_credentials');
     if (savedCredentials) {
       const credentials = JSON.parse(savedCredentials);
       dispatch(setCredentials(credentials));
 
-      // Проверяем валидность credentials
       const checkAuth = async () => {
         try {
           const api = createApi(
@@ -27,7 +25,6 @@ function App() {
           const isAuthorized = await api.checkAuth();
           dispatch(setAuthorized(isAuthorized));
         } catch (error) {
-          // Если проверка не удалась, очищаем credentials
           dispatch(setCredentials(null));
           dispatch(setAuthorized(false));
           localStorage.removeItem('whatsapp_credentials');
